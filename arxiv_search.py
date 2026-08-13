@@ -1,10 +1,11 @@
 import json
-from pathlib import Path
+import gzip
+from pathlib import Path    
 
 
 # arXiv dataset stored outside the GitHub project
 ARXIV_PATH = Path(
-    r"C:\AI_Datasets\arXiv\archive\arxiv-metadata-oai-snapshot.json"
+    r"C:\AI_Datasets\arXiv\archive\arxiv_cs_deployment.json.gz"
 )
 
 
@@ -20,7 +21,24 @@ def search_arxiv(query, max_results=5):
     if not query:
         return results
 
-    with open(ARXIV_PATH, "r", encoding="utf-8") as file:
+    # Use the important words from a natural-language question
+    # instead of requiring the complete sentence to appear in a paper.
+    stop_words = {
+        "what", "is", "are", "the", "a", "an", "of", "in", "on",
+        "to", "for", "and", "or", "can", "you", "explain", "tell",
+        "me", "about", "how", "does", "do", "why", "please"
+    }
+
+    query_words = [
+        word.strip(".,?!:;()[]{}")
+        for word in query.split()
+        if word.strip(".,?!:;()[]{}") not in stop_words
+    ]
+
+    if not query_words:
+        query_words = query.split()
+
+    with gzip.open(ARXIV_PATH, "rt", encoding="utf-8") as file:
 
         for line in file:
 
@@ -40,7 +58,7 @@ def search_arxiv(query, max_results=5):
                 title + " " + abstract + " " + categories
             ).lower()
 
-            if query in searchable_text:
+            if all(word in searchable_text for word in query_words):
 
                 results.append(
                     {
