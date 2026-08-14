@@ -121,6 +121,7 @@ if st.button("Submit"):
 
                 st.subheader("Relevant Research Papers")
 
+                all_keywords = []
                 for paper in results:
 
                     st.markdown(
@@ -148,25 +149,37 @@ if st.button("Submit"):
                     st.write("**Summary:**")
                     st.write(summarize_text(paper["abstract"]))
 
-                    st.write("**Concept Visualization:**")
-
+                
                     keywords = extract_keywords(paper["abstract"])
 
                     if keywords:
-                        keyword_data = {
-                            "Concept": [item[0] for item in keywords],
-                            "Frequency": [item[1] for item in keywords]
-                        }
+                        for concept, frequency in keywords:
+                            all_keywords.append(
+                                {
+                                    "Concept": concept,
+                                    "Frequency": frequency
+                                }
+                    )
 
-                        st.bar_chart(
-                            keyword_data,
-                            x="Concept",
-                            y="Frequency"
-                        )
+                if all_keywords:
+                    st.write("**Concept Visualization — Comparison Across Papers:**")
+
+                    import pandas as pd
+
+                    chart_data = pd.DataFrame(all_keywords)
+
+                    chart_data = chart_data.groupby(
+                        "Concept",
+                        as_index=False
+                    )["Frequency"].sum()
+
+                    st.bar_chart(
+                        chart_data,
+                        x="Concept",
+                        y="Frequency"
+                    )
 
         else:
-
-            st.subheader("🤖 AI Explanation")
 
             with st.spinner(
                 "Professor Arvind is preparing a follow-up explanation..."
@@ -176,8 +189,6 @@ if st.button("Submit"):
                     question,
                     st.session_state.conversation_history
                 )
-
-            st.write(explanation)
 
             st.session_state.conversation_history.append(
                 {
@@ -192,6 +203,16 @@ if st.button("Submit"):
                     "content": explanation
                 }
             )
+
+            st.subheader("🤖 AI Conversation")
+
+            for message in st.session_state.conversation_history:
+                if message["role"] == "user":
+                    st.markdown("**You:**")
+                    st.write(message["content"])
+                elif message["role"] == "assistant":
+                    st.markdown("**Professor Arvind:**")
+                    st.write(message["content"])
 
 st.divider()
 

@@ -59,8 +59,14 @@ def ask_ollama(question, conversation_history=None):
         with urllib.request.urlopen(request, timeout=120) as response:
             result = json.loads(response.read().decode("utf-8"))
 
-        return result["choices"][0]["message"]["content"]
+        content = result["choices"][0]["message"].get("content")
 
+        if content is None:
+            return "Professor Arvind could not generate a response for this question. Please try the follow-up question again."
+
+        return content
+
+        
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8", errors="replace")
         return f"OpenRouter returned HTTP {e.code}.\n{error_body}"
