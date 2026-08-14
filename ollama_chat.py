@@ -1,5 +1,6 @@
 import os
 import json
+from unittest import result
 import urllib.request
 import urllib.error
 import streamlit as st
@@ -58,6 +59,9 @@ def ask_ollama(question, conversation_history=None):
     try:
         with urllib.request.urlopen(request, timeout=120) as response:
             result = json.loads(response.read().decode("utf-8"))
+
+        if "choices" not in result:
+            return f"OpenRouter response error: {result}"
 
         content = result["choices"][0]["message"].get("content")
 
