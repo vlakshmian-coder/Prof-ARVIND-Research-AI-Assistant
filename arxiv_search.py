@@ -4,9 +4,7 @@ from pathlib import Path
 
 
 # arXiv dataset stored outside the GitHub project
-ARXIV_PATH = Path(
-    r"C:\AI_Datasets\arXiv\archive\arxiv_cs_deployment.json.gz"
-)
+ARXIV_PATH = Path(__file__).parent / "data" / "arxiv_cs_deployment.json.gz"
 
 
 def search_arxiv(query, max_results=5):
